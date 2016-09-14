@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+//Global variables
+
 	char ACC_ADD = 0x53;
 		char ACC_X0 = 0x32;
 		char ACC_X1 = 0x33;
@@ -34,16 +36,13 @@
 
 
 
-
-
-
 void FetchAcc(short acc_raw[]);	//Fetches raw data from ADXL345 accelerometer
 
 void FetchComp(short comp_raw[]);	//Fetches raw data from HMC5883L magnetometer
 
 void FetchGyro(short gyro_raw[]);	//Fetches raw dara from ITG3200
 
-void CaliGyro();	//Samples and calibrates the gyroscope by modifying offsets
+void CaliGyro();	//Samples and calibrates the gyroscope by modifying offsets (SENSORS MUST REMAIN STILL !!!)
 
 void SetupSensors();
 
@@ -82,8 +81,6 @@ int main (void){
 
 
 
-
-
 void FetchAcc(short acc_raw[]){
 	int fd = wiringPiI2CSetup(ACC_ADD);
 	acc_raw[0] = wiringPiI2CReadReg16(fd, ACC_X0);
@@ -91,7 +88,6 @@ void FetchAcc(short acc_raw[]){
 	acc_raw[2] = wiringPiI2CReadReg16(fd, ACC_Z0);
 
 }
-
 
 void FetchComp(short comp_raw[]){
 
@@ -107,23 +103,23 @@ void FetchGyro(short gyro_raw[]){
 	int fd = wiringPiI2CSetup(GYRO_ADD);
 	int meas;
 	int i;
-	int n=10;
+	int n=10; //Number of samples to average out
 
 
 	meas=0;
-	for(i=0; i<n; i++){
+	for(i=0; i<n; i++){		//X value calculator (average of n samples)
 		meas= meas + wiringPiI2CReadReg16(fd, GYRO_X0);
 	}
 	gyro_raw[0] = (meas/n) + gyrox_offset;
 
 	meas=0;
-	for(i=0; i<n; i++){
+	for(i=0; i<n; i++){		//Y value calculator (average of n samples)
 		meas= meas + wiringPiI2CReadReg16(fd, GYRO_Y0);
 	}
 	gyro_raw[1] = (meas/n) + gyroy_offset;
 
 	meas=0;
-	for(i=0; i<n; i++){
+	for(i=0; i<n; i++){		//Z value calculator (average of n samples)
 		meas= meas + wiringPiI2CReadReg16(fd, GYRO_Z0);
 	}
 	gyro_raw[2] = (meas/n) + gyroz_offset;
@@ -134,25 +130,25 @@ void FetchGyro(short gyro_raw[]){
 void CaliGyro(){
 
 	int i;
-	int n=1000;
+	int n=1000;	//Number of samples to average out
 	int meas;
 
 	int fd = wiringPiI2CSetup(GYRO_ADD);
 
 	meas=0;
-	for(i=0; i<n; i++){
+	for(i=0; i<n; i++){		//X offset calculator (average of n samples)
 		meas= meas + wiringPiI2CReadReg16(fd, GYRO_X0);
 	}
 	gyrox_offset = -(meas/n);
 
 	meas=0;
-	for(i=0; i<n; i++){
+	for(i=0; i<n; i++){		//Y offset calculator (average of n samples)
 		meas= meas + wiringPiI2CReadReg16(fd, GYRO_Y0);
 	}
 	gyroy_offset = -(meas/n);
 
 	meas=0;
-	for(i=0; i<n; i++){
+	for(i=0; i<n; i++){		//Z offset calculator (average of n samples)
 		meas= meas + wiringPiI2CReadReg16(fd, GYRO_Z0);
 	}
 	gyroz_offset = -(meas/n);
