@@ -79,7 +79,7 @@ int main (void){
 
 
 
-
+//This will have it's own header in next update
 
 void FetchAcc(short acc_raw[]){
 	int fd = wiringPiI2CSetup(ACC_ADD);
